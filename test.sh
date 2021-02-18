@@ -1,35 +1,58 @@
 #!/bin/bash
 
+log_file=dialog.data
+find_list=test.data
+
 result=""
-sessionKey=""
-findFlag=0
+input=""
+findFlag=false
 closeFlag="CLOSE"
-rowNum=0
-totalNum=$(cat dialog.data | wc -l) # 뽑을 로그데이터 전체 행 갯수
+rowNumArr=0
+totalNum=$(cat $log_file | wc -l) # 뽑을 로그데이터 전체 행 갯수
 tailIdx=0
+end_str="\""
 
 echo "===================="
-echo "Start Script...."
+echo "Start Script....from input"
+echo "log_file : " $log_file
+echo "find_list : " $find_list
 echo "===================="
 
-while read line
+	while read line
 	do
-	sessionKey=$line
-	echo "sessionKey : " $sessionKey
-	rowNum=$(grep -n $sessionKey dialog.data | cut -d: -f1 | head -1) # 해당 키워드가 몇번째 row에 있는지 확인
-	tailIdx=`expr ${totalNum} - ${rowNum} + 1` # tail을 어디서 부터 잡아야 할지 설정
-	while read line2
-	do
-	if [ "$closeFlag" == "$line2" ] # CLOSE를 발견할때까지 loop 탐색
-	then
-		result=$result'"'
-		result=$result'\n'
-		break
-	else
-		result=$result$line2'\n'
-	fi
-	done < <(tail -n -$tailIdx dialog.data) # 찾은 sessionKey부터 아래로 탐색
-done < sessionKeyList.data
+		input=$line
+		echo "input : " $input
+		rowNumArr=(`grep -n $input $log_file | cut -d: -f1`) # log_file에 input으로 들어온 키워드가 위치한 rows들 출력
+		for(( i=0; i<${#rowNumArr[@]}; i++ )); do
+			tailIdx=`expr ${totalNum} - ${rowNumArr[i]} + 2` # tail을 어디서 부터 잡아야 할지 설정
+			while read line2
+			do
+				echo $line2
+				if [ "$findFlag" = true ]; then
+					if [[ "$line2" =~ "$end_str" ]]; then # CLOSE가 없을 경우를 대비해 "일때도 break
+					result=$result$closeFlag
+					result=$result'\n'
+					result=$result'"'
+					findFlag=false
+					break
+					fi
+				fi
+				if [ "$closeFlag" == "$line2" ] # CLOSE를 발견할때까지 loop 탐색
+				then
+					result=$result$closeFlag
+					result=$result'\n'
+					result=$result'"'
+					findFlag=false
+					break
+				else
+					result=$result$line2'\n'
+				fi
+				if [[ "$line2" =~ "$end_str" ]]; then #line2에 "가 포함되면 findFlag값 변경
+					findFlag=true
+				fi	
+			done < <(tail -n -$tailIdx $log_file) # 찾은 sessionKey부터 아래로 탐색
+		done	
+	done < $find_list
 
 echo -e "$result" > test.txt
 
