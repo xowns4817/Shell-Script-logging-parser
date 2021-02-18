@@ -27,7 +27,6 @@ echo "===================="
 			tailIdx=`expr ${totalNum} - ${rowNumArr[i]} + 2` # tail을 어디서 부터 잡아야 할지 설정
 			while read line2
 			do
-				echo $line2
 				if [ "$findFlag" = true ]; then
 					if [[ "$line2" =~ "$end_str" ]]; then # CLOSE가 없을 경우를 대비해 "일때도 break
 					result=$result$closeFlag
@@ -37,7 +36,7 @@ echo "===================="
 					break
 					fi
 				fi
-				if [ "$closeFlag" == "$line2" ] # CLOSE를 발견할때까지 loop 탐색
+				if [[ "$line2" =~ "$closeFlag" ]] # CLOSE를 발견할때까지 loop 탐색
 				then
 					result=$result$closeFlag
 					result=$result'\n'
