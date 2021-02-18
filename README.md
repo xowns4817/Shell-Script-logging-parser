@@ -1,6 +1,16 @@
 # Shell-Script-logging-parser
 로그데이터 추출용 shell script
 
+
+[ 로그 데이터 형식 ]
+ 
+
+[ 로그 데이터에서 추출한 데이터 리스트 ]
+
+
+[ script 로직 ]
+
+
 [ 파일 인코딩 확인 ]
 ```
   file -bi 파일명
